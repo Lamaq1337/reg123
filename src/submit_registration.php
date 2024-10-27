@@ -14,7 +14,6 @@ if ($conn->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Сохранение заявки в таблицу registration_requests
     $name = $_POST["name"] ?? '';
     $email = $_POST["email"] ?? '';
 
@@ -46,28 +45,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     echo json_encode($requests);
 } elseif ($_SERVER["REQUEST_METHOD"] == "PUT") {
-    // Обработка одобрения/отклонения заявки
+
     parse_str(file_get_contents("php://input"), $_PUT);
     $requestId = $_PUT["id"] ?? '';
     $action = $_PUT["action"] ?? '';
 
     if ($requestId && ($action == 'approve' || $action == 'reject')) {
         $newStatus = $action == 'approve' ? 'approved' : 'rejected';
-
-        // Обновление статуса заявки
         $stmt = $conn->prepare("UPDATE registration_requests SET status = ? WHERE id = ?");
         $stmt->bind_param("si", $newStatus, $requestId);
         $stmt->execute();
 
         if ($stmt->affected_rows > 0) {
             if ($newStatus == 'approved') {
-                // Перенос данных в таблицу users
                 $stmt = $conn->prepare("INSERT INTO users (name, email) SELECT name, email FROM registration_requests WHERE id = ?");
                 $stmt->bind_param("i", $requestId);
                 $stmt->execute();
             }
-
-            // Удаление записи из таблицы registration_requests
             $stmt = $conn->prepare("DELETE FROM registration_requests WHERE id = ?");
             $stmt->bind_param("i", $requestId);
             $stmt->execute();

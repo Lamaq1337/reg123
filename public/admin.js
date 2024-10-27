@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch('http://localhost/registration-app/src/submit_registration.php');
             const requests = await response.json();
 
-            requestsTableBody.innerHTML = ""; // Очищаем таблицу перед добавлением заявок
+            requestsTableBody.innerHTML = "";
             requests.forEach(request => {
                 const row = document.createElement("tr");
 
